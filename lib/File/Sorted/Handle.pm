@@ -78,7 +78,6 @@ class File::Sorted::Handle {
     method read_backward_until(RegexpRef $separator){
         my $chunk_size = $self->chunk_size;
         my $start = $self->tell;
-        my $started_at_end = $self->eof;
 
         my $buf = "";
         while($self->tell != 0 && $buf !~ /$separator/){
@@ -100,10 +99,10 @@ class File::Sorted::Handle {
 
         no warnings 'uninitialized';
         my @result = split /($separator)/, $buf;
+        push @result, undef if @result % 2 == 0;
         my ($data, $sep, @rest) = reverse @result;
 
         $self->seek($start - length("$sep$data"));
-        return if @result == 2; # this means we are right on a separator
         return $data;
     }
 }
