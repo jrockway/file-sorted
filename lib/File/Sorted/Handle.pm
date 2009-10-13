@@ -105,4 +105,14 @@ class File::Sorted::Handle {
         $self->seek($start - length("$sep$data"));
         return $data;
     }
+
+    method read_record(RegexpRef $separator){
+        my $start = $self->tell;
+        my $back = $self->read_backward_until($separator);
+        $self->seek(0 + $start);
+        my $fore = $self->read_forward_until($separator);
+
+        no warnings 'uninitialized';
+        return "$back$fore";
+    }
 }
