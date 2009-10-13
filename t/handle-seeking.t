@@ -14,6 +14,11 @@ my $h = File::Sorted::Handle->new(
 );
 
 ok $h;
+
+#for my $cs (1..30){
+#$h->seek(0);
+#$h->chunk_size($cs);
+#diag "chunk size: $cs";
 my $rx = qr/-/;
 is $h->read_forward_until($rx), 'Line 1', 'got line 1 first';
 is $h->read_forward_until($rx), 'Line 2', 'then line 2';
@@ -81,3 +86,4 @@ $h->seek($h->eof_pos);
 ok !defined $h->read_forward_until($rx), 'nothing to read forward at end of file';
 $h->seek($h->eof_pos);
 is $h->read_backward_until($rx), "Line 3\n", 'last line is obviously available though';
+#}

@@ -2,18 +2,28 @@ use MooseX::Declare;
 
 class File::Sorted::Handle {
     use IO::File;
-    use MooseX::Types -declare => [qw/SeekableHandle/];
+    use MooseX::Types -declare => [qw/SeekableHandle ChunkSize/];
+    use MooseX::Types::Moose qw(Int);
     use Fcntl qw(SEEK_SET SEEK_CUR SEEK_END);
 
     my @methods = qw/sysread sysseek/;
 
     duck_type SeekableHandle, @methods; # not "duct_tape"
 
+    subtype ChunkSize, as Int, where { $_ > 0 };
+
     has 'fh' => (
         is       => 'ro',
         isa      => SeekableHandle,
         required => 1,
         handles  => \@methods,
+    );
+
+    has 'chunk_size' => (
+        is       => 'rw',
+        isa      => ChunkSize,
+        required => 1,
+        default  => 256,
     );
 
     method tell {
@@ -39,9 +49,8 @@ class File::Sorted::Handle {
         $self->seek(0);
     }
 
-    my $chunk_size = 1024;
-
     method read_forward_until(RegexpRef $separator){
+        my $chunk_size = $self->chunk_size;
         my $start = $self->tell;
 
         my $buf = "";
@@ -67,6 +76,7 @@ class File::Sorted::Handle {
     }
 
     method read_backward_until(RegexpRef $separator){
+        my $chunk_size = $self->chunk_size;
         my $start = $self->tell;
         my $started_at_end = $self->eof;
 
